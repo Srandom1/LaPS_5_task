@@ -16,3 +16,7 @@ class Field:
     @property
     def y_size(self):
         return self._y_size
+
+    def change_cell(self, x, y,cell: Cell):
+        self._cell_matrix[int(y)][int(x)] = cell
+

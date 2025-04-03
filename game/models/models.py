@@ -26,17 +26,16 @@ class Cell:
 
     def __init__(self, x=0, y=0,
                  cell_status: CellStatus = CellStatus.DISABLE,
-                 box=None):
+                 is_box_inside=None):
         """Возможно следует убрать отсюда координаты, так как они и так уже автоматически учтены в Field"""
         self.coordinates = Coordinates(x, y)
-        self.box = box
+        self.box = is_box_inside
         self.cell_status = cell_status
 
-
-class Box:
-    def __init__(self, cell: Cell = None):
-        self.cell = cell
+    @property
+    def x(self):
+        return self.coordinates.x
 
     @property
-    def is_in_finish_cell(self):
-        return self.cell.cell_status == CellStatus.FINISH
+    def y(self):
+        return self.coordinates.y
