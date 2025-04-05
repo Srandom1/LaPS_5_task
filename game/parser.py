@@ -1,7 +1,7 @@
 import re
 
 from file_manager import open_file
-from word.field import Field
+from game.models.field import Field
 from models import models
 
 

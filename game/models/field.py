@@ -17,6 +17,8 @@ class Field:
     def y_size(self):
         return self._y_size
 
-    def change_cell(self, x, y,cell: Cell):
+    def change_cell(self, x, y, cell: Cell):
         self._cell_matrix[int(y)][int(x)] = cell
 
+    def get_cell(self, x, y):
+        return self._cell_matrix[int(y)][int(x)]
