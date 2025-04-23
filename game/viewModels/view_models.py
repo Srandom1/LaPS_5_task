@@ -57,7 +57,7 @@ class CellView(CustomView):
 
 class BoxView(CustomView):
 
-    def __init__(self):
+    def __init__(self, box: Box):
         super().__init__()
 
 

@@ -39,3 +39,7 @@ class Cell:
     @property
     def y(self):
         return self.coordinates.y
+
+class Box:
+    # Todo 
+
