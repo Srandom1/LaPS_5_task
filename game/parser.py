@@ -1,17 +1,22 @@
 import re
 
-from file_manager import open_file
+
 from game.models.field import Field
-from models import models
+from game.models import models
+from game.models.models import Direction
+from game.models.player import Player
 
 
 def generate_field_from_string(source: str, x_size=20, y_size=20) -> Field:
     game_field = Field(x_size, y_size)
     source_without_spawn, start_cell = extract_start_field(source)
 
+    player = Player(Direction.RIGHT)
+    player.position = start_cell.coordinates
+    start_cell.player = True
+    game_field.player = player
 
     cleared_source = delete_line_break(source_without_spawn)
-    print(cleared_source)
     elements = separate_elements_by_comma(cleared_source)
     for element in elements:
         extracted_cell = parse_field_element(element)
@@ -19,6 +24,7 @@ def generate_field_from_string(source: str, x_size=20, y_size=20) -> Field:
 
     #На всякий случай в конце, если пользователь криво задаст уровень
     game_field.change_cell(start_cell.x, start_cell.y, start_cell)
+    return game_field
 
 def delete_line_break(source: str):
     new_string = source.replace("\n", "")
@@ -65,8 +71,3 @@ def parse_field_element(field_source: str) -> models.Cell:
             cell_model.coordinates = models.Coordinates(int(coordinates[1]), int(coordinates[0]))
             return cell_model
     raise ValueError(f"Can't parse string! Unable to extract cell status. Problem string: {field_source}")
-
-
-if __name__ == "__main__":
-    source = open_file("level1.txt")
-    generate_field_from_string(source)

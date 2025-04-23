@@ -1,32 +1,58 @@
 from abc import ABC, abstractmethod
 from game.models.models import *
 
-from PyQt5.QtCore import QRect
+from PyQt5.QtCore import QRect, QRectF, Qt, QObject, pyqtSignal
 from PyQt5.QtGui import QPainter
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import QTimer
 
 
-class CustomView(QWidget):
-    # TODO При анимации персонажа подумать, как делать перепивязку текущего объекта к другому, возможно
-    #  придется занулять параметры анимации, в частности текущее смещение
+class AnimationManager(QObject):
+    animation_completed = pyqtSignal()
+
     def __init__(self):
         super().__init__()
+        self._active_animations = 0
+
+    def start_animation(self):
+        self._active_animations += 1
+
+    def end_animation(self):
+        self._active_animations -= 1
+        if self._active_animations <= 0:
+            self._active_animations = 0
+            self.animation_completed.emit()
+
+    @property
+    def is_animating(self):
+        return self._active_animations > 0
+
+
+animation_manager = AnimationManager()
+
+
+class CustomView(QGraphicsItem):
+    def __init__(self):
+        super().__init__()
+
+        self.icon = None
+        self.size = 0
         self.childes = []
-        #Связаная с объектом модель
-        self.linked_model = None
+        # Анимационные параметры
         self._icon_x_offset = 0
         self._icon_y_offset = 0
-        self.icon = None
-
-        self._animation_timer = QTimer(self)
+        self._animation_timer = QTimer()
         self._animation_timer.timeout.connect(self._perform_animation)
         self._y_delta = 0
         self._x_delta = 0
         self._target_offset_x = 0
         self._target_offset_y = 0
-
         self._modulus_increment = 3
+        self._after_animate_action = None
+
+        # Разрешаем анимацию
+        self.setFlag(QGraphicsItem.ItemIsMovable, False)
+        self.setZValue(0)
 
     @property
     def modulus_increment(self):
@@ -36,59 +62,84 @@ class CustomView(QWidget):
     def modulus_increment(self, value):
         self._modulus_increment = abs(value)
 
-    def paint_recursively(self):
-        """Служит для отрисовки всех дочерних элементов, включая отрисовки самого элемента"""
-        self.childes: list[CustomView]
-        self.paintEvent(None)
-        for child in self.childes:
-            child.paintEvent(None)
+    def boundingRect(self):
+        """Возвращает прямоугольник, содержащий элемент"""
+        # Делаем прямоугольник немного больше, чтобы вместить анимацию
+        return QRectF(-1.5 * self.size, -1.5 * self.size, self.size * 6, self.size * 6)
 
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        if not self.icon.isNull():
-            # Рисуем иконку по центру виджета
-            target_rect = QRect(
-                (self.width() - self.icon.width()) // 2 + self._icon_x_offset,
-                (self.height() - self.icon.height()) // 2 + self._icon_y_offset,
-                self.icon.width(),
-                self.icon.height()
-            )
-            painter.drawPixmap(target_rect, self.icon)
+    def paint(self, painter, option, widget):
+        """Отрисовка элемента"""
+        if self.icon is None:
+            return
 
-    def animate(self, direction: Direction):
-        """Анимация в текущей ее реализации не предполагает смещение по двум осям координат сразу.
-        при передачи направления устанавливается некоторый целевой отступ и шаг"""
+        # Масштабируем иконку под размер ячейки
+        scaled_icon = self.icon.scaled(self.size, self.size, Qt.KeepAspectRatio)
+
+        # Рисуем с учетом смещения для анимации
+        target_rect = QRectF(
+            self._icon_x_offset,
+            self._icon_y_offset,
+            scaled_icon.width(),
+            scaled_icon.height()
+        )
+
+        # Создаем исходный прямоугольник, охватывающий всю иконку
+        source_rect = QRectF(0, 0, scaled_icon.width(), scaled_icon.height())
+
+        # Отрисовка основной иконки
+        painter.drawPixmap(target_rect, scaled_icon, source_rect)
+
+    def animate(self, direction: Direction, after_animate_action=None):
+        """Анимация с использованием QGraphicsItem"""
         self._x_delta = 0
         self._y_delta = 0
-        # не придумал как лучше сделать, так что терпите ifки
+        self._icon_x_offset = 0
+        self._icon_y_offset = 0
+        self._after_animate_action = after_animate_action
+
         if direction == Direction.UP:
             self._y_delta = -abs(self.modulus_increment)
-            self._target_offset_y = -self.icon.height()
+            self._target_offset_y = -self.size
         elif direction == Direction.DOWN:
-            self._y_delta = -abs(self.modulus_increment)
-            self._target_offset_y = self.icon.height()
+            self._y_delta = abs(self.modulus_increment)
+            self._target_offset_y = self.size
         elif direction == Direction.LEFT:
             self._x_delta = -abs(self.modulus_increment)
-            self._target_offset_x = -self.icon.height()
+            self._target_offset_x = -self.size
         elif direction == Direction.RIGHT:
             self._x_delta = abs(self.modulus_increment)
-            self._target_offset_x = self.icon.height()
+            self._target_offset_x = self.size
         else:
-            # Вот это на случае если нам передали какую-то хрень
+            if after_animate_action:
+                after_animate_action()
             return
-        self._animation_timer.start()
+
+        # Сообщаем менеджеру анимаций о начале новой анимации
+        animation_manager.start_animation()
+        self._animation_timer.start(30)
 
     def _perform_animation(self):
-        """Запускает анимацию в соответствии с заданными параметрами анимации такие, как приращение по оси и целевое
-         смещение"""
-        # Модуль берется из-за того, что движение может быть в отрицательном направлении.
+        """Выполнение шага анимации"""
+        needs_update = False
+
         if abs(self._icon_x_offset) < abs(self._target_offset_x) and self._x_delta != 0:
             self._icon_x_offset += self._x_delta
+            needs_update = True
         elif abs(self._icon_y_offset) < abs(self._target_offset_y) and self._y_delta != 0:
-            self._icon_y_offset += self._icon_y_offset
+            self._icon_y_offset += self._y_delta
+            needs_update = True
         else:
-            # Во избежания неожиданного поведения при запуске новой анимации для объекта.
             self._x_delta = 0
             self._y_delta = 0
             self._animation_timer.stop()
-        self.update()
+
+            # Сообщаем менеджеру анимаций о завершении анимации
+            animation_manager.end_animation()
+
+            if self._after_animate_action is not None:
+                action = self._after_animate_action
+                self._after_animate_action = None
+                action()
+
+        if needs_update:
+            self.update()

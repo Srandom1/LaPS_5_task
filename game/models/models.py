@@ -17,19 +17,21 @@ class CellStatus(Enum):
 
 class Coordinates:
 
-    def __init__(self, x=0, y=0):
-        self.x = x
-        self.y = y
+    def __init__(self, x: int = 0, y: int = 0):
+        self.x = int(x)
+        self.y = int(y)
 
 
 class Cell:
 
     def __init__(self, x=0, y=0,
                  cell_status: CellStatus = CellStatus.DISABLE,
-                 is_box_inside=None):
+                 is_box_inside=False,
+                 is_player_inside=False):
         """Возможно следует убрать отсюда координаты, так как они и так уже автоматически учтены в Field"""
         self.coordinates = Coordinates(x, y)
         self.box = is_box_inside
+        self.player = is_player_inside
         self.cell_status = cell_status
 
     @property
@@ -39,7 +41,3 @@ class Cell:
     @property
     def y(self):
         return self.coordinates.y
-
-class Box:
-    # Todo 
-
