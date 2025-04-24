@@ -106,13 +106,17 @@ class GameWindow(QMainWindow):
             self._cells_view_models[y][x].revalidate()
             return
         direction = self.player_controller.player.camera_direction
+
         current_cell = self._cells_view_models[y][x]
         next_cell = self._cells_view_models[y + direction_vector.y][x + direction_vector.x]
         next_next_cell = self._cells_view_models[y + 2 * direction_vector.y][x + 2* direction_vector.x]
-        current_cell.animate(direction, next_cell.revalidate)
-        # Будет работать, так как если в следующей клетки нет коробки то просто ничего не произойдет
-        next_cell.animate(direction, next_next_cell.revalidate)
+
         #next_next_cell.animate(direction, next_next_cell.revalidate)
+        to_update_list = [next_next_cell, next_cell, current_cell]
+
+        current_cell.animate(direction, next_cell.revalidate, to_update_list)
+        # Будет работать, так как если в следующей клетки нет коробки то просто ничего не произойдет
+        next_cell.animate(direction, next_next_cell.revalidate, to_update_list)
 
         current_cell.revalidate()
         if not self.game_controller.is_running:

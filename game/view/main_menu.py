@@ -24,7 +24,7 @@ class GameMenu(QMainWindow):
 
     def initUI(self):
         # Основные параметры окна
-        self.setWindowTitle("Моя Игра - Главное меню")
+        self.setWindowTitle("Яндекс доставка - пролог")
         self.setMinimumSize(600, 500)
 
         # Создаем центральный виджет
@@ -36,7 +36,7 @@ class GameMenu(QMainWindow):
         main_layout.setSpacing(10)
 
         # Заголовок игры
-        title_label = QLabel("НАЗВАНИЕ ИГРЫ")
+        title_label = QLabel("Симулятор доставщика")
         title_label.setAlignment(Qt.AlignCenter)
         title_font = QFont("Arial", 18, QFont.Bold)
         title_label.setFont(title_font)
@@ -62,27 +62,6 @@ class GameMenu(QMainWindow):
         self.levels_list.setMinimumHeight(200)
         main_layout.addWidget(self.levels_list)
 
-        # Информация о выбранном уровне
-        self.level_info_frame = QFrame()
-        self.level_info_frame.setFrameShape(QFrame.StyledPanel)
-
-        level_info_layout = QVBoxLayout(self.level_info_frame)
-
-        self.level_name_label = QLabel("Выберите уровень")
-        self.level_name_label.setFont(QFont("Arial", 12, QFont.Bold))
-
-        self.level_desc_label = QLabel("Описание выбранного уровня будет отображаться здесь")
-        self.level_desc_label.setWordWrap(True)
-
-        self.level_difficulty_label = QLabel("Сложность: -")
-
-        level_info_layout.addWidget(self.level_name_label)
-        level_info_layout.addWidget(self.level_desc_label)
-        level_info_layout.addWidget(self.level_difficulty_label)
-
-        main_layout.addWidget(self.level_info_frame)
-        main_layout.addSpacing(10)
-
         # Кнопка "Играть"
         self.play_button = QPushButton("ИГРАТЬ")
         self.play_button.setMinimumHeight(50)
@@ -90,23 +69,8 @@ class GameMenu(QMainWindow):
         self.play_button.setEnabled(False)  # Изначально кнопка неактивна
         main_layout.addWidget(self.play_button)
 
-        # Нижний ряд кнопок
-        bottom_buttons_layout = QHBoxLayout()
-
-        settings_button = QPushButton("Настройки")
-        credits_button = QPushButton("Авторы")
-        quit_button = QPushButton("Выход")
-
-        bottom_buttons_layout.addWidget(settings_button)
-        bottom_buttons_layout.addWidget(credits_button)
-        bottom_buttons_layout.addWidget(quit_button)
-
-        main_layout.addLayout(bottom_buttons_layout)
-
-        # Подключаем сигналы
         self.levels_list.itemClicked.connect(self.on_level_selected)
         self.play_button.clicked.connect(self.start_game)
-        quit_button.clicked.connect(self.close)
 
     def load_levels(self):
         # Здесь можно загрузить уровни из файла или базы данных

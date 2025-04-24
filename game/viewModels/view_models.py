@@ -39,7 +39,7 @@ class FinishMarkView(CustomView):
         self.icon = Icons.finish_mark["default"]
         self.setZValue(4)
 
-    def animate(self, direction, action):
+    def animate(self, direction, action, *args, **kwargs):
         """Так как нам не надо анимировать"""
         if action:
             action()
@@ -107,7 +107,7 @@ class CellView(CustomView):
             animation_manager.animation_completed.disconnect(self._handle_animation_completed)
             self.revalidate()
 
-    def animate(self, direction: Direction, action=None):
+    def animate(self, direction: Direction, action=None, to_update=None):
         has_children = len(self.childItems()) > 0
 
         if has_children:
@@ -128,7 +128,7 @@ class CellView(CustomView):
 
             # Запускаем анимацию для каждого дочернего элемента
             for child in self.childItems():
-                child.animate(direction, child_animation_completed)
+                child.animate(direction, child_animation_completed, to_update)
         else:
             # Если нет дочерних элементов, просто выполняем действие
             if action:

@@ -38,6 +38,7 @@ class CustomView(QGraphicsItem):
         self.icon = None
         self.size = 0
         self.childes = []
+        self.to_update_list = []
         # Анимационные параметры
         self._icon_x_offset = 0
         self._icon_y_offset = 0
@@ -89,14 +90,14 @@ class CustomView(QGraphicsItem):
         # Отрисовка основной иконки
         painter.drawPixmap(target_rect, scaled_icon, source_rect)
 
-    def animate(self, direction: Direction, after_animate_action=None):
+    def animate(self, direction: Direction, after_animate_action=None, to_update_list=None):
         """Анимация с использованием QGraphicsItem"""
         self._x_delta = 0
         self._y_delta = 0
         self._icon_x_offset = 0
         self._icon_y_offset = 0
         self._after_animate_action = after_animate_action
-
+        self.to_update_list = to_update_list if to_update_list is not None else []
         if direction == Direction.UP:
             self._y_delta = -abs(self.modulus_increment)
             self._target_offset_y = -self.size
@@ -138,8 +139,12 @@ class CustomView(QGraphicsItem):
 
             if self._after_animate_action is not None:
                 action = self._after_animate_action
+                self.to_update_list = []
                 self._after_animate_action = None
                 action()
 
         if needs_update:
             self.update()
+            if self.to_update_list is not None:
+                for i in self.to_update_list:
+                    i.update()
