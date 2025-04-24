@@ -1,9 +1,9 @@
 13 7 spawn:
 5 5 finish, 5 6 finish, 5 7 finish, 5 8 enable,
-6 6 enable, 6 8 enable,
-7 6 enable, 7 7 enable, 7 8 enable,
+6 5 enable, 6 6 enable, 6 7 enable, 6 8 enable,
+7 5 enable, 7 6 enable, 7 7 enable, 7 8 enable,
 8 6 enable,
-9 6 enable,
+9 4 enable,9 5 enable, 9 6 enable,
 10 6 enable, 10 7 box, 10 8 enable,
 11 6 enable, 11 7 box, 11 8 enable,
 12 6 enable, 12 7 box, 12 8 enable,

@@ -116,7 +116,7 @@ class CustomView(QGraphicsItem):
 
         # Сообщаем менеджеру анимаций о начале новой анимации
         animation_manager.start_animation()
-        self._animation_timer.start(30)
+        self._animation_timer.start(15)
 
     def _perform_animation(self):
         """Выполнение шага анимации"""

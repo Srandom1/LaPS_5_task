@@ -17,9 +17,12 @@ from game.viewModels.view_models import *
 
 
 class GameWindow(QMainWindow):
-    def __init__(self, field: Field, player_controller:PlayerController):
+    def __init__(self, main_menu,
+                 field: Field, player_controller:PlayerController, game_controller: GameController):
         super().__init__()
+        self.menu = main_menu
         self.player_controller = player_controller
+        self.game_controller = game_controller
         self.field = field
         self._cells_view_models = []
 
@@ -112,7 +115,7 @@ class GameWindow(QMainWindow):
         #next_next_cell.animate(direction, next_next_cell.revalidate)
 
         current_cell.revalidate()
-        if not game_controller.is_running:
+        if not self.game_controller.is_running:
             self.show_win_message()
 
     def resizeEvent(self, event):
@@ -141,7 +144,8 @@ class GameWindow(QMainWindow):
     def show_win_message(self):
         QMessageBox.information(self, "Приз", "Ура, вы победили")
     def exit_to_main_menu(self):
-        pass
+        self.menu.show()
+        self.close()
 
     def exit_game(self):
         self.close()
@@ -155,7 +159,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     Icons.set_icons()
 
-    source = read_file_as_string(LEVELS_PATH +  "/" + "level1.txt")
+    source = read_file_as_string(LEVELS_PATH +  "/" + "level_chil.txt")
     field = parser.generate_field_from_string(source)
     player = Player(None)
     game_controller = GameController(field, player)
