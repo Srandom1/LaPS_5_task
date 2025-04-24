@@ -48,11 +48,10 @@ class CustomView(QGraphicsItem):
         self._x_delta = 0
         self._target_offset_x = 0
         self._target_offset_y = 0
-        self._modulus_increment = 3
+        self._modulus_increment = 2
         self._after_animate_action = None
 
-        # Разрешаем анимацию
-        self.setFlag(QGraphicsItem.ItemIsMovable, False)
+        self.setFlag(QGraphicsItem.ItemIsMovable, True)
         self.setZValue(0)
 
     @property
@@ -117,7 +116,7 @@ class CustomView(QGraphicsItem):
 
         # Сообщаем менеджеру анимаций о начале новой анимации
         animation_manager.start_animation()
-        self._animation_timer.start(15)
+        self._animation_timer.start(1)
 
     def _perform_animation(self):
         """Выполнение шага анимации"""
@@ -144,7 +143,7 @@ class CustomView(QGraphicsItem):
                 action()
 
         if needs_update:
-            self.update()
             if self.to_update_list is not None:
                 for i in self.to_update_list:
                     i.update()
+            self.update()
